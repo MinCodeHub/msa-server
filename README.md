@@ -44,9 +44,13 @@
 
 ### 🧱 1. MSA 인프라 구조 및 초기 세팅
 - **Docker Compose** 기반으로 로컬 개발 환경 통합  
-- 서비스별 `Dockerfile` 작성 및 **멀티 컨테이너 환경 구축**
+- 서비스별 Dockerfile 작성 및 **멀티 컨테이너 환경 구축**
 - **Config Service**를 통해 각 서비스의 공통 설정(yml) 분리 및 관리 자동화
 - **Event Storming**으로 도메인 간 책임 분리 (회원 / 상품 / 커뮤니티 / 알림 등)
+- **멀티모듈 설계 및 공통 구조 관리**
+  - `common` 모듈을 통해 공통 DTO, `CustomException`, `ErrorCode` 등 예외 구조 통합
+  - `proto` 모듈을 별도 관리하여 gRPC 인터페이스를 표준화하고 서비스 간 의존 최소화
+  - 신규 서비스 추가 시 `common`과 `proto`만 의존하여 빠르게 통합 가능
 
 > ✅ *결과:* 서비스 간 독립성과 유지보수성 확보, 신규 서비스 추가 시 설정 복제 없이 확장 가능
 
@@ -55,12 +59,19 @@
 ### ☁️ 2. 배포 인프라 설계 및 CI/CD 자동화
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/604d44cc-bbf8-496e-9237-fdeb867b2872" />
 
-- **ECS Fargate + GitHub Actions** 기반 무중단 배포 파이프라인 설계  
-- **ALB + ACM(SSL)** 연동으로 HTTPS 트래픽 처리 및 자동 인증서 갱신
-- **Private Subnet + Cloud Map** 구조로 서비스 간 내부 통신 구현  
+>Internet → ALB(HTTPS) → API Gateway → (Private) user/product-service (gRPC, Cloud Map/Eureka)
+
+- **ECS Fargate + GitHub Actions** 기반 무중단 배포 파이프라인 설계
+- 외부 트래픽은 **단일 ALB → API Gateway**로만 진입
+  - **Target Group(HTTP/HTTPS) + Health Check**로 API Gateway 가용성 보장
+  - **Health Check** 기반 자동 장애 감지 및 재배포 처리
+- **ALB + ACM(SSL)** 연동으로 HTTPS 트래픽 처리
+- 내부 서비스는 로드밸런서 없이 **Private Subnet + 서비스 디스커버리**로 통신
+  - AWS Cloud Map / Eureka를 통해 API Gateway ⇄ 각 마이크로서비스 gRPC 라우팅
+  - 내부 gRPC 포트는 보안그룹으로 제한, 외부 비공개
 - **Secrets Manager + Task Execution Role**로 민감 정보 안전 관리
 
-> ✅ *결과:* 수동 배포 대비 배포 안정성 향상, 빌드~배포 자동화로 평균 배포 시간 70% 단축
+> ✅ *결과:* 외부 노출면 최소화(보안↑), ALB 비용/복잡도 절감, 배포 자동화로 평균 배포 시간 70% 단축
 
 ---
 
