@@ -1,7 +1,7 @@
 # 🛒 MSA 기반 소셜 마켓 플랫폼 (Picky / Hanium 2025)
 > 본 저장소는 원본 msa-server 프로젝트에서 **제가 직접 기여한 핵심 영역(인프라 / 채팅 / 배포 자동화)** 중심으로 정리한 포크 버전입니다.
 
->🧩 gRPC · AWS ECS 기반 MSA 아키텍처 설계부터 CI/CD 자동화, 비용 최적화까지 직접 주도한 백엔드 프로젝트입니다.
+>🧩 gRPC · AWS ECS 기반 MSA 아키텍처 설계부터 CI/CD 자동화, 비용 최적화까지 전체 구조를 고려한 백엔드 프로젝트입니다.
 ---
 
 ## 📖 프로젝트 개요
@@ -57,6 +57,9 @@
 ---
 
 ### ☁️ 2. 배포 인프라 설계 및 CI/CD 자동화
+
+아래 구조조도는 API Gateway -> gRPC 서비스 간 통신 흐름과 서비스 디스커버리 구조를 나타냅니다.
+
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/604d44cc-bbf8-496e-9237-fdeb867b2872" />
 
 >Internet → ALB(HTTPS) → API Gateway → (Private) user/product-service (gRPC, Cloud Map/Eureka)
