@@ -7,19 +7,23 @@
 > 인프라 구축부터 실시간 채팅 성능 최적화, 배포 자동화 영역을 주도적으로 담당했습니다.
 
 - **MSA 인프라 및 CI/CD 구축**:
-  - Docker Compose 기반 멀티모듈 구조 설계 및 GitHub Actions + ECS Fargate를 통한 롤링 배포 자동화 구현
+  - Docker Compose 기반 멀티모듈 구조 설계
+  - GitHub Actions + ECS Fargate를 통한 롤링 배포 자동화 구
 
-- **실시간 채팅 개발**:
-  - gRPC Bi-Directional Streaming 및 Cursor 페이징 적용으로 저지연 통신 구현 및 성능 개선
+- **실시간 채팅 성능 최적화 (Cursor Paging)**:
+  - gRPC Bi-Directional Streaming 및 Cursor 페이징 적용
+  - 메시지 조회 응답 시간 **109s → 277ms** 개선
 
-- **외부 API 호출 최적화**:
-  - LinkedHashSet 선집계 및 HashMap 캐싱으로 외부 API N+1 문제를 해결하여 응답 시간을 277ms → 29ms로 단축
+- **외부 API 호출 최적화 → 277ms → 29ms 개선**:
+  - LinkedHashSet 선집계 및 HashMap 캐싱 구조 설계
+  - 외부 API 호출 횟수 20회 -> 2회, **277ms → 29ms** 단축
 
 - **서버 부하 예측 및 분산**:  
   - S3 Presigned URL 구조를 설계하여 대용량 이미지 업로드 시 발생하는 서버 트래픽 병목 현상 제거
 
 - **아키텍처 리팩토링 제안**:
-  - Fat Gateway 문제를 분석하고 인증/라우팅 중심으로 Gateway 책임을 제한하는 구조 개선안 제안 및 설계
+  - Fat Gateway 문제를 분석
+  - 인증/라우팅 중심으로 Gateway 책임을 제한하는 구조 개선안 제안 및 설계
 
 
 ## 🧱 아키텍처 및 ERD
@@ -31,24 +35,17 @@
 
 ![System Architecture](https://github.com/user-attachments/assets/19147fb4-4eda-4204-9fda-a2cdabf41299)
 
-- MSA 기반 도메인 분리: 서비스 간 결합도를 낮추기 위해 도메인별 Microservice로 독립적 설계
-
-- Infrastructure: AWS ECS Fargate를 활용한 서버리스 컨테이너 환경 및 GitHub Actions를 통한 CI/CD 파이프라인 구축
-
+- MSA 기반 도메인 분리로 서비스 간 결합도 최소화  
+- AWS ECS Fargate + GitHub Actions로 서버리스 CI/CD 인프라 구축  
 
 ### **🔍1. 발견한 문제점: gRPC 오남용과 API Gateway의 비대화**:  
 
 > **"기술의 맹목적인 도입보다, 적재적소에 맞는 프로토콜 선택이 중요함을 깨달았습니다."**
 
-초기 설계 시 모든 내부 서비스에 gRPC를 적용하고, 외부 요청 처리를 위해 API Gateway에서 **REST ↔ gRPC 변환**을 수행했습니다. 이로 인해 다음과 같은 부작용이 발생했습니다.
-
-- **API Gateway의 비대화**: 단순 라우팅을 넘어 복잡한 변환 로직이 Gateway에 집중되어 유지보수 난이도 상승
-
-- **유연성 저하**: 새로운 외부 API 노출 시마다 Gateway의 변환 로직을 매번 수정해야 하는 병목 현상 발생
+- **문제**: 모든 통신을 gRPC로 통일 → API Gateway에 REST↔gRPC 변환 로직 집중  
+- **결과**: Gateway 비대화, 신규 API 추가 시 유지보수 부담 증가  
 
 ### **🛠️2. 리팩토링 제안 및 향후 계획**:
-
-이 문제를 해결하기 위해 팀원들을 설득하였으며, 현재 다음과 같은 개선안을 설계 중입니다.
 
 | 구분 | 기존 | 향후 계획|
 |:--:|:--:|:--:|
@@ -57,8 +54,8 @@
 | 내부 통신 | gRPC | gRPC(고성능 유지) |
 
 
-- **기대 효과**: Gateway의 부하를 줄여 시스템 전체 응답 속도를 개선하고, 각 서비스가 자체적으로 REST/gRPC 엔드포인트를 관리함으로써 독립성 확보
-  
+- **효과**: Gateway 단순화, 서비스 독립성 강화, 전체 응답 속도 개선
+
 </details>
 
 <details>
